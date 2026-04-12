@@ -1,0 +1,39 @@
+name: Salesforce Connection
+
+on:
+  pull-request:
+    branches: [ main, develop ]
+  workflow_dispatch: # Permite ejecución manual
+
+jobs:
+  connect-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 'Checkout source code'
+        uses: actions/checkout@v4
+
+      - name: 'Install Salesforce CLI'
+        run: |
+          npm install -g @salesforce/cli
+
+      - name: 'Populate auth file'
+        run: |
+          echo "${{ secrets.SFDX_JWT_KEY }}" > server.key
+
+      - name: 'Authenticate to Salesforce'
+        run: |
+          sf org login jwt \
+            --client-id ${{ secrets.SFDX_CONSUMER_KEY }} \
+            --jwt-key-file server.key \
+            --username ${{ secrets.SFDX_USERNAME }} \
+            --instance-url https://test.salesforce.com \
+            --alias my-org
+
+      - name: 'Verify Connection'
+        run: |
+          sf org display --target-org my-org
+
+      - name: 'Clean up key'
+        if: always()
+        run: rm server.key
