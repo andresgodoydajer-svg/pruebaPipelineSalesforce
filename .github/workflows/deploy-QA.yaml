@@ -1,8 +1,8 @@
 name: Salesforce Connection
 
 on:
-  pull_request:
-    branches: [ main, develop ]
+  push:
+    branches: [ develop ]
   workflow_dispatch: # Permite ejecución manual
 
 jobs:
@@ -19,20 +19,20 @@ jobs:
 
       - name: 'Populate auth file'
         run: |
-          echo "${{ secrets.SF_JWT_KEY }}" > server.key
+          echo "${{ secrets.SFDX_JWT_KEY }}" > server.key
 
       - name: 'Authenticate to Salesforce'
         run: |
           sf org login jwt \
-            --client-id ${{ secrets.SF_CLIENT_ID }} \
+            --client-id ${{ secrets.SFDX_CONSUMER_KEY }} \
             --jwt-key-file server.key \
-            --username ${{ secrets.SF_USERNAME }} \
+            --username ${{ secrets.SFDX_USERNAME }} \
             --instance-url https://test.salesforce.com \
-            --alias ambientePrueba
+            --alias my-org
 
       - name: 'Verify Connection'
         run: |
-          sf org display --target-org ambientePrueba
+          sf org display --target-org my-org
 
       - name: 'Clean up key'
         if: always()
